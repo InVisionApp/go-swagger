@@ -26,10 +26,11 @@ import (
 // Model the generate model file command
 type Model struct {
 	shared
-	Name        []string `long:"name" short:"n" description:"the model to generate"`
-	NoValidator bool     `long:"skip-validator" description:"when present will not generate a model validator"`
-	NoStruct    bool     `long:"skip-struct" description:"when present will not generate the model struct"`
-	DumpData    bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
+	Name              []string `long:"name" short:"n" description:"the model to generate"`
+	NoValidator       bool     `long:"skip-validator" description:"when present will not generate a model validator"`
+	NoStruct          bool     `long:"skip-struct" description:"when present will not generate the model struct"`
+	DumpData          bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
+	NullableByDefault bool     `long:"nullable-by-default" description:"assumes that all fields are nullable, which means that struct fields will generate with pointer types instead of primitive types"`
 }
 
 // Execute generates a model file
@@ -46,16 +47,17 @@ func (m *Model) Execute(args []string) error {
 	setDebug(cfg)
 
 	opts := &generator.GenOpts{
-		Spec:             string(m.Spec),
-		Target:           string(m.Target),
-		APIPackage:       m.APIPackage,
-		ModelPackage:     m.ModelPackage,
-		ServerPackage:    m.ServerPackage,
-		ClientPackage:    m.ClientPackage,
-		DumpData:         m.DumpData,
-		TemplateDir:      string(m.TemplateDir),
-		IncludeValidator: !m.NoValidator,
-		IncludeModel:     !m.NoStruct,
+		Spec:              string(m.Spec),
+		Target:            string(m.Target),
+		APIPackage:        m.APIPackage,
+		ModelPackage:      m.ModelPackage,
+		NullableByDefault: m.NullableByDefault,
+		ServerPackage:     m.ServerPackage,
+		ClientPackage:     m.ClientPackage,
+		DumpData:          m.DumpData,
+		TemplateDir:       string(m.TemplateDir),
+		IncludeValidator:  !m.NoValidator,
+		IncludeModel:      !m.NoStruct,
 	}
 
 	if err := opts.EnsureDefaults(false); err != nil {

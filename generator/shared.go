@@ -304,6 +304,7 @@ type GenOpts struct {
 	IncludeSupport    bool
 	ExcludeSpec       bool
 	DumpData          bool
+	NullableByDefault bool
 	WithContext       bool
 	defaultsEnsured   bool
 

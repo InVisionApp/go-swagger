@@ -143,6 +143,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	receiver := "m"
 	resolver := newTypeResolver("", specDoc)
 	resolver.ModelName = name
+	resolver.NullableByDefault = opts.NullableByDefault
 	analyzed := analysis.New(specDoc.Spec())
 
 	di := discriminatorInfo(analyzed)

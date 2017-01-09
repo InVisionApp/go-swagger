@@ -289,10 +289,11 @@ func knownDefGoType(def string, schema spec.Schema, clear func(string) string) (
 }
 
 type typeResolver struct {
-	Doc           *loads.Document
-	ModelsPackage string
-	ModelName     string
-	KnownDefs     map[string]struct{}
+	Doc               *loads.Document
+	ModelsPackage     string
+	ModelName         string
+	NullableByDefault bool
+	KnownDefs         map[string]struct{}
 }
 
 func (t *typeResolver) NewWithModelName(name string) *typeResolver {
@@ -390,9 +391,9 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isAnonymous bool, isRe
 
 			switch result.SwaggerType {
 			case str:
-				result.IsNullable = nullableStrfmt(schema, isRequired)
+				result.IsNullable = t.NullableByDefault || nullableStrfmt(schema, isRequired)
 			case number, integer:
-				result.IsNullable = nullableNumber(schema, isRequired)
+				result.IsNullable = t.NullableByDefault || nullableNumber(schema, isRequired)
 			default:
 				result.IsNullable = t.IsNullable(schema)
 			}
@@ -403,6 +404,10 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isAnonymous bool, isRe
 }
 
 func (t *typeResolver) isNullable(schema *spec.Schema) bool {
+	if (t.NullableByDefault) {
+		return true
+	}
+
 	check := func(extension string) (bool, bool) {
 		v, found := schema.Extensions[extension]
 		nullable, cast := v.(bool)
@@ -678,11 +683,11 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		case boolean:
 			result.IsPrimitive = true
 			result.IsCustomFormatter = false
-			result.IsNullable = nullableBool(schema, isRequired)
+			result.IsNullable = t.NullableByDefault || nullableBool(schema, isRequired)
 		case number, integer:
 			result.IsPrimitive = true
 			result.IsCustomFormatter = false
-			result.IsNullable = nullableNumber(schema, isRequired)
+			result.IsNullable = t.NullableByDefault || nullableNumber(schema, isRequired)
 		case file:
 		}
 		return
@@ -693,7 +698,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		t.inferAliasing(&result, schema, isAnonymous, isRequired)
 
 		result.IsPrimitive = true
-		result.IsNullable = nullableString(schema, isRequired)
+		result.IsNullable = t.NullableByDefault || nullableString(schema, isRequired)
 		return
 
 	case object:
